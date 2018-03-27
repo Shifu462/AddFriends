@@ -18,33 +18,34 @@ namespace AddFriends
 
             var Users = Program.VK.Users.Get(FriendsList);
 
-            /*
-            var Users = await Program.VK.Groups.GetMembersAsync(new GroupsGetMembersParams
-            {
-                Count = 100,
-                GroupId = "dayvinchik"
-            });
-            */
-
             var count = 0;
             var error = 0;
             foreach (var user in Users)
             {
-                try
+                while (true)
                 {
-                    await Program.VK.Friends.AddAsync(user.Id);
-                    count++;
-                }
-                catch (CaptchaNeededException captcha)
-                {
-                    new Captcha(captcha.Img.AbsoluteUri).ShowDialog();
-                    await Program.VK.Friends.AddAsync(user.Id, captchaSid:captcha.Sid, captchaKey:Program.LastCaptcha);
-                    Program.LastCaptcha = "";
-                    count++;
-                }
-                catch (Exception ex)
-                {
-                    error++;
+                    try
+                    {
+                        await Program.VK.Friends.AddAsync(user.Id, captchaSid: Program.LastCaptchaSid, 
+                            captchaKey: Program.LastCaptcha);
+
+                        Program.ClearCaptchaInfo();
+                        count++;
+                        break;
+                    }
+                    catch (CaptchaNeededException captcha)
+                    {
+                        Program.LastCaptchaSid = captcha.Sid;
+                        Program.LastCaptchaUri = captcha.Img.AbsoluteUri;
+
+                        // Program.LastCaptcha = Form Result;
+                        using (var captchaForm = new Captcha(captcha.Img.AbsoluteUri))
+                            captchaForm.ShowDialog();
+                    }
+                    catch (Exception ex)
+                    {
+                        error++;
+                    }
                 }
 
                 ButtonAdd.Text = $"Добавлено: {count}/{Users.Count} | Пропущено: {error}";

@@ -7,8 +7,18 @@ namespace AddFriends
     static class Program
     {
         public static VkApi VK = new VkApi();
-        public static string LastCaptcha { get; set; } = "";
+
+        public static long?  LastCaptchaSid { get; set; }  = null;
+        public static string LastCaptchaUri { get; set; } = null;
+        public static string LastCaptcha { get; set; }    = null;
         
+        public static void ClearCaptchaInfo()
+        {
+            LastCaptchaSid = null;
+            LastCaptchaUri = null;
+            LastCaptcha    = null;
+        }
+
         /// <summary>
         /// Главная точка входа для приложения.
         /// </summary>
